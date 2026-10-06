@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>ME EN 3000 Fatigue Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab-notebook column — sticky module index on top, one module per section, each pairing a short concept with a live instrument. */
+:root{
+  --paper:#f4f6f9; --surface:#ffffff; --ink:#16202c; --muted:#566476; --rule:#d6dde6; --soft:#e9eef4;
+  --accent:#1d5fc4; --accent-ink:#ffffff; --signal:#d27a1f; --good:#23774a; --bad:#bd3428;
+  --c-sod:#7a55c4; --c-good:#1d5fc4; --c-ger:#118274; --c-asme:#b2417a; --c-lang:#6f7c8c;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e131a; --surface:#151c25; --ink:#e3e9f0; --muted:#97a5b5; --rule:#2a3542; --soft:#1c2531;
+  --accent:#6ea6ff; --accent-ink:#0b1220; --signal:#f2a254; --good:#5cc489; --bad:#ff7466;
+  --c-sod:#b294ff; --c-good:#6ea6ff; --c-ger:#4fd1c0; --c-asme:#f07fb5; --c-lang:#93a1b2; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e131a; --surface:#151c25; --ink:#e3e9f0; --muted:#97a5b5; --rule:#2a3542; --soft:#1c2531;
+  --accent:#6ea6ff; --accent-ink:#0b1220; --signal:#f2a254; --good:#5cc489; --bad:#ff7466;
+  --c-sod:#b294ff; --c-good:#6ea6ff; --c-ger:#4fd1c0; --c-asme:#f07fb5; --c-lang:#93a1b2; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.4rem,6vw,3.6rem);letter-spacing:.01em}
+h2{font-size:clamp(1.8rem,4vw,2.3rem)}
+h3{font-size:1.35rem;font-weight:600}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+sub,sup{font-size:.72em}
+
+header.top{padding-block:40px 28px;border-bottom:1px solid var(--rule)}
+header.top .wrap{display:grid;gap:14px}
+header.top p{color:var(--muted);font-size:1.08rem}
+
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--paper);border-bottom:1px solid var(--rule)}
+nav.toc .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+nav.toc a{flex:none;text-decoration:none;color:var(--muted);font-family:var(--f-display);font-weight:600;font-size:1.02rem;letter-spacing:.02em;padding:4px 10px;border-radius:6px;white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);background:var(--soft);outline:none}
+nav.toc a span{font-family:var(--f-mono);font-size:.72rem;margin-right:5px;color:var(--accent)}
+
+main section{padding-block:48px;border-bottom:1px solid var(--rule);scroll-margin-top:56px}
+.sec-head{display:grid;gap:10px;margin-bottom:22px}
+.sec-head p{color:var(--muted)}
+.prose{display:grid;gap:12px;margin-bottom:22px}
+
+.lab{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px}
+@media (max-width:760px){.lab{grid-template-columns:minmax(0,1fr)}}
+.controls{display:grid;gap:14px;align-content:start}
+.field{display:grid;gap:4px}
+.field label,.field .lbl{font-size:.88rem;font-weight:600;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.field label output{font-family:var(--f-mono);color:var(--ink);font-weight:500}
+input[type=number],select{width:100%;font:inherit;font-family:var(--f-mono);font-size:.95rem;padding:7px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{font:inherit;font-weight:600;font-size:.92rem;border-radius:6px;padding:7px 14px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+button.ghost{background:transparent;color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:flex;align-items:center;gap:6px;font-size:.9rem;color:var(--muted)}
+
+.viz{min-width:0;display:grid;gap:14px;align-content:start}
+.viz svg{width:100%;height:auto;display:block}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.ro{background:var(--soft);border-radius:8px;padding:10px 12px;display:grid;gap:2px}
+.ro .k{font-size:.8rem;color:var(--muted);font-weight:600}
+.ro .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.12rem}
+.verdict{border-radius:8px;padding:10px 14px;font-weight:600;border:1px solid var(--rule)}
+.verdict.ok{color:var(--good);border-color:var(--good)}
+.verdict.no{color:var(--bad);border-color:var(--bad)}
+.verdict.neutral{color:var(--ink)}
+.note{font-size:.9rem;color:var(--muted)}
+.formula{font-family:var(--f-mono);font-size:.92rem;background:var(--soft);border-radius:6px;padding:10px 12px;overflow-x:auto;white-space:nowrap}
+
+/* SVG theming */
+.ax{stroke:var(--muted);stroke-width:1.2;fill:none}
+.grid{stroke:var(--rule);stroke-width:1;fill:none}
+.lbl{fill:var(--muted);font-family:var(--f-mono);font-size:12px}
+.lbl-ink{fill:var(--ink);font-family:var(--f-mono);font-size:12px}
+.curve{stroke:var(--accent);stroke-width:2.4;fill:none}
+.dash{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 4;fill:none}
+.pt{fill:var(--signal);stroke:var(--surface);stroke-width:2}
+.sig{stroke:var(--signal);stroke-width:1.6;fill:none}
+.sigfill{fill:var(--signal)}
+.accfill{fill:var(--accent)}
+.disk{fill:var(--soft);stroke:var(--ink);stroke-width:1.5}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend label{display:flex;align-items:center;gap:6px;font-size:.88rem;cursor:pointer}
+.sw{width:18px;height:3px;border-radius:2px;display:inline-block}
+
+table.nt{width:100%;border-collapse:collapse;font-size:.92rem}
+table.nt th,table.nt td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule)}
+table.nt td.num,table.nt th.num{text-align:right}
+table.nt th{font-weight:600;color:var(--muted);font-size:.82rem}
+.tblwrap{overflow-x:auto}
+.pill{display:inline-block;font-size:.76rem;font-weight:700;padding:1px 8px;border-radius:99px;border:1px solid currentColor}
+.pill.ok{color:var(--good)} .pill.no{color:var(--bad)}
+
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:96px minmax(0,1fr) 84px;gap:10px;align-items:center;font-size:.88rem}
+.bar .track{height:12px;background:var(--soft);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:3px}
+.bar .fill.final{background:var(--signal)}
+.bar .val{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+
+.steps-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px;padding:0;list-style:none;counter-reset:s}
+.steps-map li{counter-increment:s;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;font-size:.92rem;display:grid;gap:4px}
+.steps-map li::before{content:"Step " counter(s);font-family:var(--f-mono);font-size:.72rem;color:var(--accent);letter-spacing:.05em;text-transform:uppercase}
+
+.example{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px;display:grid;gap:14px;margin-bottom:18px}
+.example .given{color:var(--muted)}
+.example ol{margin:0;padding-left:1.4em;display:grid;gap:10px}
+.example ol li{padding-left:4px}
+.example ol li b{font-weight:600}
+.example .ans{color:var(--good);font-weight:700}
+
+.quiz{display:grid;gap:16px}
+.q{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:18px;display:grid;gap:10px}
+.q .prompt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;background:var(--paper);color:var(--ink);border:1px solid var(--rule)}
+.opt:hover{border-color:var(--accent)}
+.opt.right{border-color:var(--good);color:var(--good);font-weight:600}
+.opt.wrong{border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{font-size:.94rem}
+.score{font-family:var(--f-display);font-size:1.4rem;font-weight:600}
+
+footer{padding-block:28px 40px;color:var(--muted);font-size:.86rem}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+
+<header class="top"><div class="wrap">
+  <div class="eyebrow">ME EN 3000 · Design of Mechanical Elements · Part 4</div>
+  <h1>Fatigue Failure Lab</h1>
+  <p>A self-review companion to Part 4 of the lecture notes (pp. 39–57). Each module pairs the key idea with a live tool: change the inputs, watch what moves, and check your hand calculations against it.</p>
+</div></header>
+
+<nav class="toc" aria-label="Modules"><div class="wrap">
+  <a href="#cycles"><span>4.1</span>Stress cycles</a>
+  <a href="#moore"><span>4.3</span>R.R. Moore test</a>
+  <a href="#sn"><span>4.5</span>S-N curve</a>
+  <a href="#marin"><span>4.7</span>Marin factors</a>
+  <a href="#fluct"><span>4.9</span>Fluctuating stress</a>
+  <a href="#combined"><span>4.10</span>Combined loading</a>
+  <a href="#kf"><span>4.11</span>Notches</a>
+  <a href="#examples"><span>Ex</span>Worked examples</a>
+  <a href="#quiz"><span>✓</span>Self-check</a>
+</div></nav>
+
+<main class="wrap">
+
+<!-- 4.1 -->
+<section id="cycles">
+  <div class="sec-head">
+    <div class="eyebrow">4.1 – 4.2 · Notes p. 39</div>
+    <h2>Every cycle is a mean plus an amplitude</h2>
+    <p>Fatigue is progressive fracture under repeated cycles of stress. Unlike static failure, it usually gives no warning before the part breaks. A crack initiates near a stress concentration, propagates only while the material is in tension, and ends in sudden unstable fracture.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="field"><label for="wmax">σ<sub>max</sub> <output id="wmaxO"></output></label><input type="range" id="wmax" min="-100" max="100" value="80"></div>
+      <div class="field"><label for="wmin">σ<sub>min</sub> <output id="wminO"></output></label><input type="range" id="wmin" min="-100" max="100" value="-20"></div>
+      <div class="field"><span class="lbl">Presets</span>
+        <div class="btns">
+          <button class="ghost" data-w="60,-60">Fully reversed</button>
+          <button class="ghost" data-w="80,0">Repeated</button>
+          <button class="ghost" data-w="80,20">Fluctuating</button>
+          <button class="ghost" data-w="50,50">Static</button>
+        </div></div>
+      <div class="formula">σ<sub>m</sub> = (σ<sub>max</sub> + σ<sub>min</sub>)/2<br>σ<sub>a</sub> = |σ<sub>max</sub> − σ<sub>min</sub>|/2</div>
+    </div>
+    <div class="viz">
+      <svg id="wSvg" viewBox="0 0 620 250" role="img" aria-label="Stress versus time waveform"></svg>
+      <div class="readout">
+        <div class="ro"><span class="k">Midrange σ<sub>m</sub></span><span class="v" id="wSm"></span></div>
+        <div class="ro"><span class="k">Amplitude σ<sub>a</sub></span><span class="v" id="wSa"></span></div>
+        <div class="ro"><span class="k">Range σ<sub>r</sub></span><span class="v" id="wSr"></span></div>
+      </div>
+      <div class="verdict neutral" id="wType"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.3 -->
+<section id="moore">
+  <div class="sec-head">
+    <div class="eyebrow">4.3 · Notes p. 40</div>
+    <h2>Why the rotating beam test is completely reversed</h2>
+    <p>In the R.R. Moore machine the polished specimen sits between the two load points, where it carries pure bending with no transverse shear. The bending moment stays fixed in space while the specimen spins, so every point on the surface travels from the tension side (bottom) to the compression side (top) once per revolution. Track point 1 below.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="field"><label for="mAng">Rotation angle θ <output id="mAngO"></output></label><input type="range" id="mAng" min="0" max="720" value="0"></div>
+      <div class="btns"><button id="mPlay">Play</button></div>
+      <div class="formula">σ = Mc / I · cos θ</div>
+      <p class="note">The stress at the tracked point follows σ/σ<sub>max</sub> = cos θ, with σ<sub>m</sub> = 0. Each test gives one point (σ<sub>a</sub>, N) on the S-N diagram.</p>
+    </div>
+    <div class="viz">
+      <svg id="mSvg" viewBox="0 0 620 240" role="img" aria-label="Rotating cross-section and stress history"></svg>
+      <div class="readout">
+        <div class="ro"><span class="k">σ / σ<sub>max</sub></span><span class="v" id="mVal"></span></div>
+        <div class="ro"><span class="k">State at point 1</span><span class="v" id="mState"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4.4 – 4.5 -->
+<section id="sn">
+  <div class="sec-head">
+    <div class="eyebrow">4.4 – 4.6 · Notes pp. 41–42, 46</div>
+    <h2>Building the S-N line from two points</h2>
+    <p>For a specific condition we replace the test data with a straight line on log-log axes between point A (N = 10<sup>3</sup>, S<sub>f</sub> = fS<sub>ut</sub>) and point B (N = 10<sup>6</sup>, S<sub>f</sub> = S<sub>e</sub>). Beyond 10<sup>6</sup> cycles a steel has infinite life. Non-ferrous metals such as aluminum have no clear endurance limit.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="field"><label for="snU">Units</label><select id="snU"><option value="ksi">kpsi</option><option value="MPa">MPa</option></select></div>
+      <div class="row2">
+        <div class="field"><label for="snSut">S<sub>ut</sub></label><input type="number" id="snSut" value="70" step="any"></div>
+        <div class="field"><label for="snSe">S<sub>e</sub></label><input type="number" id="snSe" value="30" step="any"></div>
+      </div>
+      <div class="field"><label for="snF">Fatigue strength fraction f</label><input type="number" id="snF" step="0.001"></div>
+      <label class="check"><input type="checkbox" id="snFAuto" checked> Estimate f from S<sub>ut</sub> (Fig. 6-18)</label>
+      <div class="field"><label for="snQ">Query</label><select id="snQ"><option value="sa">Given σ<sub>a</sub>, find N</option><option value="N">Given N, find S<sub>f</sub>(N)</option></select></div>
+      <div class="field" id="snSaF"><label for="snSa">σ<sub>a</sub></label><input type="number" id="snSa" value="40" step="any"></div>
+      <div class="field" id="snNF" hidden><label for="snN">N (cycles)</label><input type="number" id="snN" value="10000" step="any"></div>
+    </div>
+    <div class="viz">
+      <svg id="snSvg" viewBox="0 0 620 330" role="img" aria-label="S-N diagram on log-log axes"></svg>
+      <div class="readout">
+        <div class="ro"><span class="k">a = (fS<sub>ut</sub>)²/S<sub>e</sub></span><span class="v" id="snA"></span></div>
+        <div class="ro"><span class="k">b = −⅓ log(fS<sub>ut</sub>/S<sub>e</sub>)</span><span class="v" id="snB"></span></div>
+        <div class="ro"><span class="k" id="snOutK"></span><span class="v" id="snOut"></span></div>
+      </div>
+      <div class="verdict" id="snVerdict"></div>
+      <p class="note">S<sub>f</sub> = aN<sup>b</sup> and N = (σ<sub>a</sub>/a)<sup>1/b</sup> hold only between 10<sup>3</sup> and 10<sup>6</sup> cycles. Fully reversed factor of safety: n = S<sub>f</sub>/σ<sub>a</sub>. The f estimate fits the Fig. 6-18 curve (70–200 kpsi); below 70 kpsi it uses f = 0.9. Override it if you read the chart differently.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4.7 -->
+<section id="marin">
+  <div class="sec-head">
+    <div class="eyebrow">4.6 – 4.7 · Notes pp. 43–45</div>
+    <h2>From S′<sub>e</sub> to S<sub>e</sub>: the Marin factors</h2>
+    <p>The primed value S′<sub>e</sub> comes from an ideal specimen: small, polished, room temperature. Your part is none of those, so you correct it: S<sub>e</sub> = k<sub>a</sub> k<sub>b</sub> k<sub>c</sub> k<sub>d</sub> k<sub>e</sub> k<sub>m</sub> S′<sub>e</sub>. Watch which factor costs the most.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="field"><label for="mrSut">S<sub>ut</sub> of steel (MPa)</label><input type="number" id="mrSut" value="600" step="any"></div>
+      <div class="field"><label for="mrSurf">Surface finish (k<sub>a</sub>)</label><select id="mrSurf">
+        <option value="1.58,-0.085">Ground</option><option value="4.51,-0.265" selected>Machined or cold-drawn</option><option value="57.7,-0.718">Hot-rolled</option><option value="272,-0.995">As-forged</option></select></div>
+      <div class="field"><label for="mrGeo">Size (k<sub>b</sub>)</label><select id="mrGeo">
+        <option value="rot">Rotating round shaft</option><option value="nrRound">Non-rotating round, bending</option><option value="nrRect">Non-rotating rectangle, bending</option><option value="axial">Axial loading</option></select></div>
+      <div class="row2" id="mrDimRound"><div class="field"><label for="mrD">d (mm)</label><input type="number" id="mrD" value="32" step="any"></div></div>
+      <div class="row2" id="mrDimRect" hidden>
+        <div class="field"><label for="mrH">h (mm)</label><input type="number" id="mrH" value="20" step="any"></div>
+        <div class="field"><label for="mrBw">b (mm)</label><input type="number" id="mrBw" value="10" step="any"></div></div>
+      <div class="field"><label for="mrLoad">Loading (k<sub>c</sub>)</label><select id="mrLoad">
+        <option value="1">Bending (1)</option><option value="0.85">Axial (0.85)</option><option value="0.59">Pure torsion (0.59)</option><option value="1c">Combined, use von Mises (1)</option></select></div>
+      <div class="row2">
+        <div class="field"><label for="mrT">Temp. (°C)</label><input type="number" id="mrT" value="20" min="20" max="600" step="any"></div>
+        <div class="field"><label for="mrRel">Reliability</label><select id="mrRel">
+          <option value="1">50%</option><option value="0.897">90%</option><option value="0.868">95%</option><option value="0.814">99%</option><option value="0.753">99.9%</option><option value="0.702">99.99%</option><option value="0.659">99.999%</option><option value="0.620">99.9999%</option></select></div>
+      </div>
+      <div class="field"><label for="mrKm">Special concern k<sub>m</sub></label><input type="number" id="mrKm" value="1" step="0.01"></div>
+    </div>
+    <div class="viz">
+      <div class="bars" id="mrBars"></div>
+      <div class="tblwrap"><table class="nt" id="mrTbl"></table></div>
+      <div class="verdict neutral" id="mrOut"></div>
+      <div class="btns"><button id="mrSend">Use this S<sub>e</sub> in the S-N builder</button></div>
+      <p class="note">S′<sub>e</sub> = 0.5 S<sub>ut</sub> for S<sub>ut</sub> ≤ 1400 MPa, otherwise 700 MPa (100 kpsi). k<sub>a</sub> = a·S<sub>ut</sub><sup>b</sup> (Table 6-2, MPa). k<sub>b</sub> = 1.24d<sup>−0.107</sup> for 2.79 ≤ d ≤ 51 mm, 1.51d<sup>−0.157</sup> for 51 &lt; d ≤ 254 mm. Non-rotating parts use the equivalent diameter d<sub>e</sub> (0.37d for a round, 0.808√(hb) for a rectangle). k<sub>d</sub> is interpolated from Table 6-4.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4.8 – 4.9 -->
+<section id="fluct">
+  <div class="sec-head">
+    <div class="eyebrow">4.8 – 4.10 · Notes pp. 49–51</div>
+    <h2>Fluctuating stress on the σ<sub>a</sub>–σ<sub>m</sub> diagram</h2>
+    <p>A tensile midrange stress opens cracks and lowers fatigue strength; a compressive one helps. Each criterion draws a boundary between infinite life (inside) and finite life (outside). The load line from the origin through your operating point shows where it would cross each boundary if the loads scaled up together.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="row2">
+        <div class="field"><label for="hMax">σ<sub>max</sub></label><input type="number" id="hMax" value="60" step="any"></div>
+        <div class="field"><label for="hMin">σ<sub>min</sub></label><input type="number" id="hMin" value="-20" step="any"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="hSe">S<sub>e</sub></label><input type="number" id="hSe" value="40" step="any"></div>
+        <div class="field"><label for="hSy">S<sub>y</sub></label><input type="number" id="hSy" value="65" step="any"></div>
+        <div class="field"><label for="hSut">S<sub>ut</sub></label><input type="number" id="hSut" value="80" step="any"></div>
+      </div>
+      <div class="field"><label for="hF">f (for cycles to failure)</label><input type="number" id="hF" value="0.9" step="0.01"></div>
+      <p class="note">Loaded with Example 6.2 (kPa). Use any consistent unit.</p>
+      <div class="legend" id="hLeg"></div>
+    </div>
+    <div class="viz">
+      <svg id="hSvg" viewBox="0 0 620 390" role="img" aria-label="Alternating versus midrange stress diagram"></svg>
+      <div class="tblwrap"><table class="nt" id="hTbl"></table></div>
+      <div class="verdict" id="hVerdict"></div>
+      <div class="readout" id="hCyc"></div>
+      <p class="note">S-N data come from fully reversed tests, so N = (σ/a)<sup>1/b</sup> cannot take σ<sub>a</sub> directly when σ<sub>m</sub> ≠ 0. Convert first to the equivalent fully reversed stress from Goodman: σ<sub>a</sub>/σ<sub>rev</sub> + σ<sub>m</sub>/S<sub>ut</sub> = 1. This tool treats σ<sub>m</sub> ≥ 0; for compressive midrange, check n = S<sub>e</sub>/σ<sub>a</sub> and yielding.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4.10 combined -->
+<section id="combined">
+  <div class="sec-head">
+    <div class="eyebrow">4.10 · Notes p. 52</div>
+    <h2>Combined loading: collapse everything into von Mises</h2>
+    <p>On a rotating shaft with a constant transverse force and a constant torque, bending is fully reversed while torsion is steady. Combine all alternating components into σ′<sub>a</sub> and all midrange components into σ′<sub>m</sub>, each with its fatigue stress concentration factor, then use one criterion. Because the axial term carries its own 1/0.85, use k<sub>c</sub> = 1 for combined loading.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="tblwrap"><table class="nt">
+        <tr><th></th><th>K</th><th>alt.</th><th>mid.</th></tr>
+        <tr><td>Bending σ</td><td><input type="number" id="cKb" value="1" step="any" aria-label="Kf bending"></td><td><input type="number" id="cBa" value="175" step="any" aria-label="bending alternating"></td><td><input type="number" id="cBm" value="0" step="any" aria-label="bending midrange"></td></tr>
+        <tr><td>Axial σ</td><td><input type="number" id="cKx" value="1" step="any" aria-label="Kf axial"></td><td><input type="number" id="cXa" value="0" step="any" aria-label="axial alternating"></td><td><input type="number" id="cXm" value="0" step="any" aria-label="axial midrange"></td></tr>
+        <tr><td>Torsion τ</td><td><input type="number" id="cKt" value="1" step="any" aria-label="Kfs torsion"></td><td><input type="number" id="cTa" value="0" step="any" aria-label="torsion alternating"></td><td><input type="number" id="cTm" value="90" step="any" aria-label="torsion midrange"></td></tr>
+      </table></div>
+      <div class="row3">
+        <div class="field"><label for="cSe">S<sub>e</sub></label><input type="number" id="cSe" value="280" step="any"></div>
+        <div class="field"><label for="cSy">S<sub>y</sub></label><input type="number" id="cSy" value="420" step="any"></div>
+        <div class="field"><label for="cSut">S<sub>ut</sub></label><input type="number" id="cSut" value="560" step="any"></div>
+      </div>
+      <p class="note">Loaded with Example 4.4 (MPa).</p>
+    </div>
+    <div class="viz">
+      <div class="formula">σ′<sub>a</sub> = { [K<sub>f,b</sub>σ<sub>a,b</sub> + K<sub>f,ax</sub>σ<sub>a,ax</sub>/0.85]² + 3[K<sub>fs</sub>τ<sub>a</sub>]² }<sup>½</sup><br>σ′<sub>m</sub> = { [K<sub>f,b</sub>σ<sub>m,b</sub> + K<sub>f,ax</sub>σ<sub>m,ax</sub>]² + 3[K<sub>fs</sub>τ<sub>m</sub>]² }<sup>½</sup></div>
+      <div class="readout">
+        <div class="ro"><span class="k">σ′<sub>a</sub></span><span class="v" id="cSa"></span></div>
+        <div class="ro"><span class="k">σ′<sub>m</sub></span><span class="v" id="cSm"></span></div>
+        <div class="ro"><span class="k">n<sub>f</sub>, mod-Goodman</span><span class="v" id="cNg"></span></div>
+        <div class="ro"><span class="k">n<sub>f</sub>, Gerber</span><span class="v" id="cNge"></span></div>
+        <div class="ro"><span class="k">n<sub>y</sub>, static (max von Mises)</span><span class="v" id="cNy"></span></div>
+      </div>
+      <div class="verdict" id="cVerdict"></div>
+      <p class="note">Static check uses the peak stresses without K<sub>f</sub> (ductile material): σ′<sub>max</sub> = {(σ<sub>a</sub> + σ<sub>m</sub>)² + 3(τ<sub>a</sub> + τ<sub>m</sub>)²}<sup>½</sup>, n<sub>y</sub> = S<sub>y</sub>/σ′<sub>max</sub>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4.11 -->
+<section id="kf">
+  <div class="sec-head">
+    <div class="eyebrow">4.11 · Notes pp. 53–54</div>
+    <h2>Notches matter for every material in fatigue</h2>
+    <p>Under static loading we apply stress concentration only to brittle materials. Under fatigue loading we apply it to ductile and brittle materials alike, softened by the notch sensitivity q: K<sub>f</sub> = 1 + q(K<sub>t</sub> − 1). Stronger steels and larger fillet radii push q toward 1.</p>
+  </div>
+  <div class="lab">
+    <div class="controls">
+      <div class="field"><label for="kSut">S<sub>ut</sub> of steel (MPa)</label><input type="number" id="kSut" value="690" step="any"></div>
+      <div class="field"><label for="kR">Notch radius r <output id="kRO"></output></label><input type="range" id="kR" min="0.2" max="4" step="0.05" value="3"></div>
+      <div class="field"><label for="kLoad">Loading</label><select id="kLoad"><option value="b">Bending or axial (Fig. 6-20)</option><option value="t">Torsion (Fig. 6-21)</option></select></div>
+      <div class="field"><label for="kKt">K<sub>t</sub> (or K<sub>ts</sub>) from the chart</label><input type="number" id="kKt" value="1.65" step="0.01"></div>
+      <p class="note">Default: Example 4.3 shoulder, D/d = 38/32 ≈ 1.19 and r/d ≈ 0.094 give K<sub>t</sub> ≈ 1.65 from Fig. A-15-9.</p>
+    </div>
+    <div class="viz">
+      <svg id="kSvg" viewBox="0 0 620 280" role="img" aria-label="Notch sensitivity versus notch radius"></svg>
+      <div class="readout">
+        <div class="ro"><span class="k">Notch sensitivity q</span><span class="v" id="kQ"></span></div>
+        <div class="ro"><span class="k">K<sub>f</sub> = 1 + q(K<sub>t</sub> − 1)</span><span class="v" id="kKf"></span></div>
+      </div>
+      <p class="note">Curves use the Neuber fit behind Figs. 6-20 and 6-21 for steels. Read the charts on exams; use this to check your reading. q = 0 means notch-insensitive (K<sub>f</sub> = 1); q = 1 means fully sensitive (K<sub>f</sub> = K<sub>t</sub>).</p>
+    </div>
+  </div>
+</section>
+
+<!-- Examples -->
+<section id="examples">
+  <div class="sec-head">
+    <div class="eyebrow">Notes pp. 47–51, 55</div>
+    <h2>Worked examples, one step at a time</h2>
+    <p>Try each step on paper before you reveal it. The fully reversed procedure always runs in the same order:</p>
+  </div>
+  <ol class="steps-map">
+    <li>Look up S<sub>ut</sub>, S<sub>y</sub></li>
+    <li>Estimate S′<sub>e</sub></li>
+    <li>Find k<sub>a</sub> … k<sub>m</sub></li>
+    <li>Compute S<sub>e</sub></li>
+    <li>Build S<sub>f</sub> = aN<sup>b</sup></li>
+    <li>Find the stresses</li>
+    <li>Compare: n = S<sub>f</sub>/σ<sub>a</sub></li>
+  </ol>
+
+  <div class="example" data-ex>
+    <div class="eyebrow">Example 4.1 · fully reversed, finite life</div>
+    <h3>Sizing a square cantilever for 10<sup>4</sup> cycles</h3>
+    <p class="given">A 0.6 m cantilever of AISI 1080 HR with a b × b square section carries F = 2000 sin ωt N at the free end. It must survive 10<sup>4</sup> cycles with n = 1.5. Assume k<sub>b</sub> = 0.85. Find b.</p>
+    <ol>
+      <li hidden><b>Material.</b> Table A-20 for 1080 HR: S<sub>ut</sub> = 770 MPa, S<sub>y</sub> = 420 MPa.</li>
+      <li hidden><b>S′<sub>e</sub>.</b> S<sub>ut</sub> &lt; 1400 MPa, so S′<sub>e</sub> = 0.5(770) = 385 MPa.</li>
+      <li hidden><b>Marin factors.</b> Hot-rolled: k<sub>a</sub> = 57.7(770)<sup>−0.718</sup> = 0.488. k<sub>b</sub> = 0.85 (given), k<sub>c</sub> = 1 (bending), k<sub>d</sub> = k<sub>e</sub> = k<sub>m</sub> = 1.</li>
+      <li hidden><b>S<sub>e</sub></b> = (0.488)(0.85)(385) ≈ 160 MPa.</li>
+      <li hidden><b>S<sub>f</sub>(10<sup>4</sup>).</b> S<sub>ut</sub> = 111.7 kpsi gives f ≈ 0.83 (Fig. 6-18), so fS<sub>ut</sub> ≈ 642 MPa. a = 642²/160 ≈ 2575 MPa, b = −⅓ log(642/160) ≈ −0.201. S<sub>f</sub> = 2575(10<sup>4</sup>)<sup>−0.201</sup> ≈ 404 MPa.</li>
+      <li hidden><b>Stress.</b> The maximum moment is at the wall: M = (2000)(0.6) = 1200 N·m. For a square section σ<sub>a</sub> = Mc/I = 6M/b³.</li>
+      <li hidden><b>Design.</b> n = S<sub>f</sub>/σ<sub>a</sub> = 1.5 → σ<sub>a</sub> = 269 MPa → b³ = 6(1200)/(269 × 10<sup>6</sup>) = 2.68 × 10<sup>−5</sup> m³ → <span class="ans">b ≈ 30 mm</span>. Small differences in reading f shift this by a few tenths of a millimeter.</li>
+    </ol>
+    <div class="btns"><button data-next>Show next step</button><button class="ghost" data-all>Show all</button><button class="ghost" data-reset>Reset</button></div>
+  </div>
+
+  <div class="example" data-ex>
+    <div class="eyebrow">Example 6.2 · fluctuating stress, cycles to failure</div>
+    <h3>Is the life infinite? If not, how many cycles?</h3>
+    <p class="given">σ<sub>max</sub> = 60 kPa, σ<sub>min</sub> = −20 kPa, f = 0.9, S<sub>ut</sub> = 80 kPa, S<sub>yt</sub> = 65 kPa, S<sub>e</sub> = 40 kPa. Use modified Goodman.</p>
+    <ol>
+      <li hidden><b>Components.</b> σ<sub>a</sub> = |60 − (−20)|/2 = 40 kPa, σ<sub>m</sub> = (60 − 20)/2 = 20 kPa.</li>
+      <li hidden><b>Goodman.</b> n<sub>f</sub> = 1/(40/40 + 20/80) = 0.8 &lt; 1, so the life is finite.</li>
+      <li hidden><b>Why not N = (σ<sub>a</sub>/a)<sup>1/b</sup> directly?</b> The S-N line was built from fully reversed tests (σ<sub>m</sub> = 0). We need the fully reversed stress that does the same damage.</li>
+      <li hidden><b>Equivalent reversed stress.</b> σ<sub>rev</sub> = σ<sub>a</sub>/(1 − σ<sub>m</sub>/S<sub>ut</sub>) = 40/(1 − 0.25) = 53.3 kPa.</li>
+      <li hidden><b>S-N constants.</b> a = (0.9 × 80)²/40 = 130 kPa, b = −⅓ log(72/40) = −0.085.</li>
+      <li hidden><b>Life.</b> N = (53.3/130)<sup>−1/0.085</sup> ≈ <span class="ans">3.4 × 10<sup>4</sup> cycles</span>.</li>
+    </ol>
+    <div class="btns"><button data-next>Show next step</button><button class="ghost" data-all>Show all</button><button class="ghost" data-reset>Reset</button></div>
+  </div>
+
+  <div class="example" data-ex>
+    <div class="eyebrow">Example 4.4 · combined loading</div>
+    <h3>Steady torsion plus alternating bending</h3>
+    <p class="given">S<sub>e</sub> = 280 MPa, S<sub>y</sub> = 420 MPa, S<sub>ut</sub> = 560 MPa. Steady torsional stress 90 MPa, alternating bending stress 175 MPa. Find the static factor of safety (von Mises) and the fatigue factor of safety (mod-Goodman and Gerber).</p>
+    <ol>
+      <li hidden><b>Sort the components.</b> σ<sub>a</sub> = 175, σ<sub>m</sub> = 0, τ<sub>a</sub> = 0, τ<sub>m</sub> = 90 MPa.</li>
+      <li hidden><b>Static.</b> Peak von Mises: σ′<sub>max</sub> = √(175² + 3·90²) = 234 MPa, so n<sub>y</sub> = 420/234 ≈ <span class="ans">1.79</span>.</li>
+      <li hidden><b>Von Mises components.</b> σ′<sub>a</sub> = 175 MPa; σ′<sub>m</sub> = √3 · 90 = 156 MPa.</li>
+      <li hidden><b>Mod-Goodman.</b> n<sub>f</sub> = 1/(175/280 + 156/560) = 1/0.903 ≈ <span class="ans">1.11</span>.</li>
+      <li hidden><b>Gerber.</b> Solve nσ<sub>a</sub>/S<sub>e</sub> + (nσ<sub>m</sub>/S<sub>ut</sub>)² = 1 for n: n<sub>f</sub> ≈ <span class="ans">1.37</span>. Gerber is less conservative than Goodman, as the diagram shows.</li>
+    </ol>
+    <div class="btns"><button data-next>Show next step</button><button class="ghost" data-all>Show all</button><button class="ghost" data-reset>Reset</button></div>
+  </div>
+  <p class="note">Examples 4.3 and 4.5 need K<sub>t</sub> read from the stress concentration charts. Use the Notches module to check q and K<sub>f</sub>, and the Combined loading module for the final factor of safety.</p>
+</section>
+
+<!-- Quiz -->
+<section id="quiz">
+  <div class="sec-head">
+    <div class="eyebrow">Self-check</div>
+    <h2>Concept check</h2>
+    <p>Twelve short questions on the ideas behind the formulas. Your first answer counts toward the score.</p>
+    <div class="score" id="qScore">0 / 12</div>
+  </div>
+  <div class="quiz" id="quizBox"></div>
+  <div class="btns" style="margin-top:16px"><button class="ghost" id="qReset">Start over</button></div>
+</section>
+</main>
+
+<footer><div class="wrap">Based on ME EN 3000 lecture notes, Part 4, by Prof. Jiyoung Chang, University of Utah. All rights reserved; reuse or distribution of the notes in any form requires permission from Prof. Chang. Table and chart values follow the course textbook.</div></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value);
+function sig(x,d=3){if(!isFinite(x))return'—';if(x===0)return'0';const a=Math.abs(x);
+  if(a>=1e5||a<1e-3){const e=Math.floor(Math.log10(a));const m=x/Math.pow(10,e);return m.toFixed(2)+' × 10<sup>'+e+'</sup>';}
+  return parseFloat(x.toPrecision(d)).toLocaleString('en-US',{maximumFractionDigits:6});}
+function f2(x,d=2){return isFinite(x)?x.toFixed(d):'—';}
+
+/* ---------- 4.1 waveform ---------- */
+function drawWave(){
+  let mx=num('wmax'),mn=num('wmin');
+  if(mn>mx){mn=mx;$('wmin').value=mn;}
+  $('wmaxO').textContent=mx;$('wminO').textContent=mn;
+  const sm=(mx+mn)/2,sa=Math.abs(mx-mn)/2;
+  const W=620,H=250,l=50,r=14,t=16,b=30;
+  const Y=v=>t+(100-v)/200*(H-t-b),X=u=>l+u*(W-l-r);
+  let s=`<line class="grid" x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+  [-100,-50,50,100].forEach(v=>s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke-dasharray="2 4"/><text class="lbl" x="${l-8}" y="${Y(v)+4}" text-anchor="end">${v}</text>`);
+  s+=`<text class="lbl" x="${l-8}" y="${Y(0)+4}" text-anchor="end">0</text>`;
+  s+=`<line class="ax" x1="${l}" x2="${l}" y1="${t}" y2="${H-b}"/><text class="lbl" x="${W-r}" y="${H-8}" text-anchor="end">time →</text><text class="lbl" x="${l}" y="${H-8}">σ</text>`;
+  let d='';for(let i=0;i<=300;i++){const u=i/300;const v=sm+sa*Math.sin(u*3*2*Math.PI);d+=(i?'L':'M')+X(u).toFixed(1)+','+Y(v).toFixed(1);}
+  s+=`<line class="dash" x1="${l}" x2="${W-r}" y1="${Y(mx)}" y2="${Y(mx)}"/><line class="dash" x1="${l}" x2="${W-r}" y1="${Y(mn)}" y2="${Y(mn)}"/>`;
+  s+=`<line class="sig" x1="${l}" x2="${W-r}" y1="${Y(sm)}" y2="${Y(sm)}" stroke-dasharray="7 4"/>`;
+  s+=`<path class="curve" d="${d}"/>`;
+  const xa=X(0.5/3*1.5);
+  if(sa>1){s+=`<line class="sig" x1="${xa}" x2="${xa}" y1="${Y(sm)}" y2="${Y(mx)}"/><polygon class="sigfill" points="${xa-4},${Y(mx)+7} ${xa+4},${Y(mx)+7} ${xa},${Y(mx)}"/><text class="lbl-ink" x="${xa+8}" y="${(Y(sm)+Y(mx))/2+4}">σa</text>`;}
+  s+=`<text class="lbl-ink" x="${W-r-4}" y="${Y(sm)-6}" text-anchor="end">σm</text>`;
+  $('wSvg').innerHTML=s;
+  $('wSm').textContent=f2(sm,1);$('wSa').textContent=f2(sa,1);$('wSr').textContent=f2(2*sa,1);
+  let ty;
+  if(sa<0.5)ty='Static loading: σa = 0, only a constant σm. Use static failure theories.';
+  else if(Math.abs(sm)<0.5)ty='Fully (completely) reversed: σm = 0. This is the condition of the R.R. Moore test and the S-N diagram.';
+  else if(Math.abs(mn)<0.5)ty='Repeated: σmin = 0, so σm = σa.';
+  else if(sm>0)ty='Fluctuating with tensile midrange (σm > 0): fatigue strength is reduced.';
+  else ty='Fluctuating with compressive midrange (σm < 0): cracks are held closed, so fatigue strength tends to rise.';
+  $('wType').textContent=ty;
+}
+['wmax','wmin'].forEach(i=>$(i).addEventListener('input',drawWave));
+document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>{const[a,c]=b.dataset.w.split(',');$('wmax').value=a;$('wmin').value=c;drawWave();}));
+drawWave();
+
+/* ---------- 4.3 rotating beam ---------- */
+let mTheta=0,mRun=false,mLast=0;
+function drawMoore(){
+  const th=mTheta*Math.PI/180;const cx=110,cy=120,R=80;
+  const px=cx+R*Math.sin(th),py=cy+R*Math.cos(th);
+  let s=`<circle class="disk" cx="${cx}" cy="${cy}" r="${R}"/>`;
+  s+=`<line class="dash" x1="${cx-R-14}" x2="${cx+R+14}" y1="${cy}" y2="${cy}"/>`;
+  s+=`<text class="lbl" x="${cx}" y="${cy-R-10}" text-anchor="middle">compression</text><text class="lbl" x="${cx}" y="${cy+R+20}" text-anchor="middle">tension</text>`;
+  s+=`<text class="lbl" x="${cx+R+16}" y="${cy+4}">N.A.</text>`;
+  s+=`<line class="sig" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="pt" cx="${px}" cy="${py}" r="8"/><text class="lbl-ink" x="${px+(Math.sin(th)>=0?12:-12)}" y="${py+4}" text-anchor="${Math.sin(th)>=0?'start':'end'}">1</text>`;
+  const l=250,r=606,t=30,b=210,Y=v=>(t+b)/2-v*(b-t)/2,X=a=>l+a/720*(r-l);
+  s+=`<line class="grid" x1="${l}" x2="${r}" y1="${Y(0)}" y2="${Y(0)}"/><line class="ax" x1="${l}" x2="${l}" y1="${t-8}" y2="${b+8}"/>`;
+  s+=`<text class="lbl" x="${l-6}" y="${Y(1)+4}" text-anchor="end">+1</text><text class="lbl" x="${l-6}" y="${Y(-1)+4}" text-anchor="end">−1</text>`;
+  [180,360,540,720].forEach(a=>s+=`<text class="lbl" x="${X(a)}" y="${b+24}" text-anchor="middle">${a}°</text>`);
+  let d='';for(let a=0;a<=720;a+=4){d+=(a?'L':'M')+X(a).toFixed(1)+','+Y(Math.cos(a*Math.PI/180)).toFixed(1);}
+  s+=`<path class="curve" d="${d}" opacity=".35"/>`;
+  let d2='';for(let a=0;a<=mTheta;a+=2){d2+=(a?'L':'M')+X(a).toFixed(1)+','+Y(Math.cos(a*Math.PI/180)).toFixed(1);}
+  if(d2)s+=`<path class="curve" d="${d2}"/>`;
+  s+=`<circle class="pt" cx="${X(mTheta)}" cy="${Y(Math.cos(th))}" r="6"/>`;
+  s+=`<text class="lbl" x="${l+6}" y="${t-12}">σ / σmax at point 1</text>`;
+  $('mSvg').innerHTML=s;
+  const v=Math.cos(th);$('mVal').textContent=(v>=0?'+':'')+v.toFixed(2);
+  $('mState').textContent=Math.abs(v)<0.05?'neutral axis':(v>0?'tension':'compression');
+  $('mAngO').textContent=Math.round(mTheta)+'°';$('mAng').value=mTheta;
+}
+function mStep(ts){if(!mRun)return;if(mLast){mTheta=(mTheta+(ts-mLast)*0.09)%720;}mLast=ts;drawMoore();requestAnimationFrame(mStep);}
+$('mPlay').addEventListener('click',()=>{mRun=!mRun;$('mPlay').textContent=mRun?'Pause':'Play';mLast=0;if(mRun)requestAnimationFrame(mStep);});
+$('mAng').addEventListener('input',()=>{mTheta=num('mAng');drawMoore();});
+drawMoore();
+
+/* ---------- S-N ---------- */
+function fEst(sutKsi){if(sutKsi<70)return 0.9;const s=Math.min(sutKsi,200);return 1.06-2.8e-3*s+6.9e-6*s*s;}
+function drawSN(){
+  const u=$('snU').value,Sut=num('snSut'),Se=num('snSe');
+  const sutKsi=u==='ksi'?Sut:Sut/6.89476;
+  if($('snFAuto').checked)$('snF').value=fEst(sutKsi).toFixed(3);
+  $('snF').disabled=$('snFAuto').checked;
+  const f=num('snF');const fS=f*Sut;
+  const a=fS*fS/Se,b=-Math.log10(fS/Se)/3;
+  $('snA').innerHTML=sig(a,4)+' '+u;$('snB').textContent=b.toFixed(4);
+  const q=$('snQ').value;$('snSaF').hidden=q!=='sa';$('snNF').hidden=q!=='N';
+  let qN=null,qS=null,v=$('snVerdict');v.className='verdict';
+  if(q==='sa'){
+    const sa=num('snSa');qS=sa;$('snOutK').textContent='Cycles to failure N';
+    if(sa<=Se){$('snOut').textContent='∞';v.classList.add('ok');v.textContent=`σa ≤ Se: infinite life (n = Se/σa = ${f2(Se/sa)}).`;qN=1e8;}
+    else{qN=Math.pow(sa/a,1/b);$('snOut').innerHTML=sig(qN);
+      if(qN<1e3){v.classList.add('no');v.innerHTML='N &lt; 10<sup>3</sup>: low-cycle region. The S-N line is not valid here.';}
+      else{v.classList.add('no');v.innerHTML=`σa &gt; Se: finite life, about ${sig(qN)} cycles.`;}}
+  }else{
+    const N=num('snN');qN=N;$('snOutK').textContent='Fatigue strength Sf(N)';
+    if(N>=1e6){qS=Se;$('snOut').innerHTML=sig(Se)+' '+u;v.classList.add('ok');v.textContent='N ≥ 10⁶: on the endurance plateau, Sf = Se.';}
+    else{qS=a*Math.pow(N,b);$('snOut').innerHTML=sig(qS,4)+' '+u;
+      if(N<1e3){v.classList.add('no');v.innerHTML='N &lt; 10<sup>3</sup>: outside the valid range of Sf = aN<sup>b</sup>.';}
+      else{v.className='verdict neutral';v.innerHTML=`Sf(${sig(N)}) = ${sig(qS,4)} ${u}. A part with σa = Sf fails at exactly N cycles.`;}}
+  }
+  // chart
+  const W=620,H=330,l=62,r=20,t=18,bt=46;
+  const lo=Math.log10(Se*0.55),hi=Math.log10(Sut*1.15);
+  const X=n=>l+n/8*(W-l-r),Y=s=>H-bt-(Math.log10(s)-lo)/(hi-lo)*(H-t-bt);
+  let s='';
+  for(let e=0;e<=8;e++){s+=`<line class="grid" x1="${X(e)}" x2="${X(e)}" y1="${t}" y2="${H-bt}"/><text class="lbl" x="${X(e)}" y="${H-bt+18}" text-anchor="middle">10${e}</text>`;}
+  s+=`<rect x="${X(3)}" y="${t}" width="${X(6)-X(3)}" height="${H-t-bt}" fill="var(--soft)" opacity=".7"/>`;
+  s+=`<text class="lbl" x="${(X(3)+X(6))/2}" y="${t+14}" text-anchor="middle">finite life (Sf = aNᵇ)</text><text class="lbl" x="${(X(6)+X(8))/2}" y="${t+14}" text-anchor="middle">infinite life</text><text class="lbl" x="${X(1.5)}" y="${t+14}" text-anchor="middle">low cycle</text>`;
+  [[Sut,'Sut'],[fS,'fSut'],[Se,'Se']].forEach(([v,n])=>{s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke-dasharray="2 4"/><text class="lbl" x="${l-6}" y="${Y(v)+4}" text-anchor="end">${n}</text>`;});
+  s+=`<line class="ax" x1="${l}" x2="${l}" y1="${t}" y2="${H-bt}"/><line class="ax" x1="${l}" x2="${W-r}" y1="${H-bt}" y2="${H-bt}"/>`;
+  s+=`<text class="lbl" x="${(l+W-r)/2}" y="${H-8}" text-anchor="middle">number of cycles N (log)</text>`;
+  s+=`<path class="dash" d="M${X(0)},${Y(Sut)}L${X(3)},${Y(fS)}"/>`;
+  s+=`<path class="curve" d="M${X(3)},${Y(fS)}L${X(6)},${Y(Se)}L${X(8)},${Y(Se)}"/>`;
+  s+=`<circle class="accfill" cx="${X(3)}" cy="${Y(fS)}" r="5"/><text class="lbl-ink" x="${X(3)+8}" y="${Y(fS)-8}">A</text>`;
+  s+=`<circle class="accfill" cx="${X(6)}" cy="${Y(Se)}" r="5"/><text class="lbl-ink" x="${X(6)+6}" y="${Y(Se)-10}">B</text>`;
+  if(qN&&qS&&isFinite(qN)&&qN>=1&&qN<=1e8&&qS>0){const lx=Math.log10(qN),y=Y(qS);
+    if(y>t&&y<H-bt){s+=`<line class="sig" x1="${l}" x2="${X(lx)}" y1="${y}" y2="${y}" stroke-dasharray="4 3"/><line class="sig" x1="${X(lx)}" x2="${X(lx)}" y1="${y}" y2="${H-bt}" stroke-dasharray="4 3"/><circle class="pt" cx="${X(lx)}" cy="${y}" r="7"/>`;}}
+  $('snSvg').innerHTML=s;
+}
+['snU','snSut','snSe','snF','snFAuto','snQ','snSa','snN'].forEach(i=>$(i).addEventListener('input',drawSN));
+$('snU').addEventListener('change',()=>{const k=$('snU').value==='MPa'?6.89476:1/6.89476;['snSut','snSe','snSa'].forEach(i=>$(i).value=+(num(i)*k).toPrecision(4));drawSN();});
+drawSN();
+
+/* ---------- Marin ---------- */
+const kdT=[[20,1],[50,1.01],[100,1.02],[150,1.025],[200,1.02],[250,1],[300,.975],[350,.943],[400,.9],[450,.843],[500,.768],[550,.672],[600,.549]];
+function kdOf(T){T=Math.max(20,Math.min(600,T));for(let i=1;i<kdT.length;i++){if(T<=kdT[i][0]){const[a,b]=kdT[i-1],[c,d]=kdT[i];return b+(d-b)*(T-a)/(c-a);}}return .549;}
+let mrSe=0;
+function drawMarin(){
+  const Sut=num('mrSut');const Spe=Sut<=1400?0.5*Sut:700;
+  const [sa,sb]=$('mrSurf').value.split(',').map(Number);const ka=sa*Math.pow(Sut,sb);
+  const g=$('mrGeo').value;$('mrDimRound').hidden=g==='nrRect';$('mrDimRect').hidden=g!=='nrRect';
+  $('mrDimRound').style.display=g==='axial'?'none':'';
+  let d=num('mrD'),de=d,kb,kbNote='';
+  if(g==='axial'){kb=1;kbNote='axial: kb = 1';}
+  else{if(g==='nrRound'){de=0.37*d;kbNote=`de = 0.37d = ${f2(de,1)} mm`;}
+    else if(g==='nrRect'){de=0.808*Math.sqrt(num('mrH')*num('mrBw'));kbNote=`de = 0.808√(hb) = ${f2(de,1)} mm`;}
+    else kbNote=`d = ${f2(d,1)} mm`;
+    if(de<=51)kb=1.24*Math.pow(de,-0.107);else kb=1.51*Math.pow(de,-0.157);
+    if(de<2.79||de>254)kbNote+=' (outside 2.79–254 mm)';}
+  const lv=$('mrLoad').value;let kc=lv==='1c'?1:parseFloat(lv);
+  if(g==='axial'&&lv==='1'){kc=0.85;}
+  const kd=kdOf(num('mrT')),ke=parseFloat($('mrRel').value),km=num('mrKm');
+  const fac=[['ka',ka,'surface'],['kb',kb,kbNote],['kc',kc,g==='axial'&&lv==='1'?'axial loading → 0.85':'loading'],['kd',kd,'temperature'],['ke',ke,'reliability'],['km',km,'special']];
+  let cur=Spe,bars=`<div class="bar"><span>S′e</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="val">${f2(Spe,0)} MPa</span></div>`;
+  fac.forEach(([n,k])=>{cur*=k;bars+=`<div class="bar"><span>× ${n} = ${f2(k,3)}</span><div class="track"><div class="fill${n==='km'?' final':''}" style="width:${Math.max(0,Math.min(100,cur/Spe*100))}%"></div></div><span class="val">${f2(cur,0)} MPa</span></div>`;});
+  $('mrBars').innerHTML=bars;mrSe=cur;
+  let tb='<tr><th>Factor</th><th class="num">Value</th><th>Basis</th></tr>';
+  fac.forEach(([n,k,why])=>tb+=`<tr><td>${n}</td><td class="num mono">${f2(k,3)}</td><td>${why}</td></tr>`);
+  $('mrTbl').innerHTML=tb;
+  const worst=fac.reduce((m,x)=>x[1]<m[1]?x:m);
+  $('mrOut').innerHTML=`Se = ${f2(cur,1)} MPa, or ${f2(cur/Spe*100,0)}% of S′e. Largest reduction: ${worst[0]} = ${f2(worst[1],3)}.`;
+}
+['mrSut','mrSurf','mrGeo','mrD','mrH','mrBw','mrLoad','mrT','mrRel','mrKm'].forEach(i=>$(i).addEventListener('input',drawMarin));
+$('mrSend').addEventListener('click',()=>{$('snU').value='MPa';$('snSut').value=num('mrSut');$('snSe').value=+mrSe.toFixed(1);$('snSa').value=+(mrSe*1.3).toFixed(0);drawSN();document.getElementById('sn').scrollIntoView();});
+drawMarin();
+
+/* ---------- Haigh ---------- */
+const crit=[
+  {id:'sod',name:'Soderberg',col:'var(--c-sod)',on:true},
+  {id:'good',name:'Mod-Goodman',col:'var(--c-good)',on:true},
+  {id:'ger',name:'Gerber',col:'var(--c-ger)',on:true},
+  {id:'asme',name:'ASME-elliptic',col:'var(--c-asme)',on:true},
+  {id:'lang',name:'Langer (yield)',col:'var(--c-lang)',on:true}];
+$('hLeg').innerHTML=crit.map(c=>`<label><input type="checkbox" id="lg_${c.id}" checked><span class="sw" style="background:${c.col}"></span>${c.name}</label>`).join('');
+crit.forEach(c=>$('lg_'+c.id).addEventListener('change',e=>{c.on=e.target.checked;drawHaigh();}));
+function nGerber(sa,sm,Se,Sut){if(sm<=0)return Se/sa;return 0.5*Math.pow(Sut/sm,2)*(sa/Se)*(-1+Math.sqrt(1+Math.pow(2*sm*Se/(Sut*sa),2)));}
+function drawHaigh(){
+  const mx=num('hMax'),mn=num('hMin'),Se=num('hSe'),Sy=num('hSy'),Sut=num('hSut'),f=num('hF');
+  const sa=Math.abs(mx-mn)/2,sm=(mx+mn)/2,smc=Math.max(sm,0);
+  const n={sod:1/(sa/Se+smc/Sy),good:1/(sa/Se+smc/Sut),ger:nGerber(sa,smc,Se,Sut),asme:1/Math.sqrt((sa/Se)**2+(smc/Sy)**2),lang:Sy/(sa+smc)};
+  const W=620,H=390,l=56,r=20,t=16,b=46;
+  const xm=Math.max(Sut,smc)*1.08,ym=Math.max(Sy,Se,sa)*1.12;
+  const X=v=>l+v/xm*(W-l-r),Y=v=>H-b-v/ym*(H-t-b);
+  let s='';
+  // infinite-life region shade under Goodman
+  s+=`<path d="M${X(0)},${Y(0)}L${X(0)},${Y(Se)}L${X(Sut)},${Y(0)}Z" fill="var(--soft)"/>`;
+  s+=`<line class="ax" x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}"/><line class="ax" x1="${l}" x2="${l}" y1="${t}" y2="${Y(0)}"/>`;
+  [[Se,'Se'],[Sy,'Sy']].forEach(([v,nm])=>s+=`<text class="lbl" x="${l-6}" y="${Y(v)+4}" text-anchor="end">${nm}</text><line class="grid" x1="${l-3}" x2="${l}" y1="${Y(v)}" y2="${Y(v)}"/>`);
+  [[Sy,'Sy'],[Sut,'Sut']].forEach(([v,nm])=>s+=`<text class="lbl" x="${X(v)}" y="${Y(0)+18}" text-anchor="middle">${nm}</text>`);
+  s+=`<text class="lbl" x="${(l+W-r)/2}" y="${H-8}" text-anchor="middle">midrange stress σm</text><text class="lbl" x="${l+6}" y="${t+10}">σa</text>`;
+  const P=(fn,x1,steps=60)=>{let d='';for(let i=0;i<=steps;i++){const x=x1*i/steps;d+=(i?'L':'M')+X(x).toFixed(1)+','+Y(fn(x)).toFixed(1);}return d;};
+  const paths={sod:`M${X(0)},${Y(Se)}L${X(Sy)},${Y(0)}`,good:`M${X(0)},${Y(Se)}L${X(Sut)},${Y(0)}`,
+    ger:P(x=>Se*(1-(x/Sut)**2),Sut),asme:P(x=>Se*Math.sqrt(Math.max(0,1-(x/Sy)**2)),Sy,90),lang:`M${X(0)},${Y(Sy)}L${X(Sy)},${Y(0)}`};
+  crit.forEach(c=>{if(c.on)s+=`<path d="${paths[c.id]}" fill="none" stroke="${c.col}" stroke-width="2.2" ${c.id==='lang'?'stroke-dasharray="7 5"':''}/>`;});
+  // load line
+  if(sa>0){let ex,ey;if(smc<=0){ex=0;ey=ym;}else{const k=sa/smc;ex=Math.min(xm,ym/k);ey=k*ex;}
+    s+=`<line class="sig" x1="${X(0)}" y1="${Y(0)}" x2="${X(ex)}" y2="${Y(ey)}" stroke-dasharray="5 4"/>`;}
+  s+=`<line class="dash" x1="${X(smc)}" x2="${X(smc)}" y1="${Y(sa)}" y2="${Y(0)}"/><line class="dash" x1="${X(0)}" x2="${X(smc)}" y1="${Y(sa)}" y2="${Y(sa)}"/>`;
+  s+=`<circle class="pt" cx="${X(smc)}" cy="${Y(sa)}" r="7"/><text class="lbl-ink" x="${X(smc)+10}" y="${Y(sa)-10}">(σm, σa) = (${f2(sm,1)}, ${f2(sa,1)})</text>`;
+  s+=`<text class="lbl" x="${X(Sut*0.12)}" y="${Y(Se*0.22)}">infinite life (Goodman)</text>`;
+  $('hSvg').innerHTML=s;
+  let tb='<tr><th>Criterion</th><th>Equation</th><th class="num">n</th><th></th></tr>';
+  const eq={sod:'σa/Se + σm/Sy = 1/n',good:'σa/Se + σm/Sut = 1/n',ger:'nσa/Se + (nσm/Sut)² = 1',asme:'(nσa/Se)² + (nσm/Sy)² = 1',lang:'σa + σm = Sy/n'};
+  crit.forEach(c=>{const v=n[c.id];tb+=`<tr><td><span class="sw" style="background:${c.col};margin-right:6px"></span>${c.name}</td><td class="mono" style="font-size:.82rem">${eq[c.id]}</td><td class="num mono">${f2(v)}</td><td><span class="pill ${v>=1?'ok':'no'}">${c.id==='lang'?(v>=1?'no yield':'yields'):(v>=1?'infinite':'finite')}</span></td></tr>`;});
+  $('hTbl').innerHTML=tb;
+  const v=$('hVerdict');v.className='verdict '+(n.good>=1?'ok':'no');
+  v.innerHTML=sm<0?'σm &lt; 0 (compressive): the table uses σm = 0, i.e. n = Se/σa. Check yielding separately.':(n.good>=1?`Mod-Goodman n = ${f2(n.good)} ≥ 1: infinite life.`:`Mod-Goodman n = ${f2(n.good)} &lt; 1: finite life. Estimate N below.`);
+  // cycles
+  let cy='';
+  if(smc<Sut){const srev=sa/(1-smc/Sut);const fS=f*Sut,a=fS*fS/Se,bb=-Math.log10(fS/Se)/3;
+    let Nt;if(srev<=Se)Nt='∞ (σrev ≤ Se)';else{const N=Math.pow(srev/a,1/bb);Nt=sig(N)+(N<1e3?' (below 10<sup>3</sup>, outside valid range)':'');}
+    cy=`<div class="ro"><span class="k">σrev = σa/(1 − σm/Sut)</span><span class="v">${f2(srev)}</span></div><div class="ro"><span class="k">a, b</span><span class="v">${sig(a,4)}, ${bb.toFixed(4)}</span></div><div class="ro"><span class="k">Cycles to failure N</span><span class="v">${Nt}</span></div>`;}
+  $('hCyc').innerHTML=cy;
+}
+['hMax','hMin','hSe','hSy','hSut','hF'].forEach(i=>$(i).addEventListener('input',drawHaigh));
+drawHaigh();
+
+/* ---------- Combined ---------- */
+function drawComb(){
+  const g=id=>num(id)||0;
+  const sa=Math.sqrt((g('cKb')*g('cBa')+g('cKx')*g('cXa')/0.85)**2+3*(g('cKt')*g('cTa'))**2);
+  const sm=Math.sqrt((g('cKb')*g('cBm')+g('cKx')*g('cXm'))**2+3*(g('cKt')*g('cTm'))**2);
+  const Se=g('cSe'),Sy=g('cSy'),Sut=g('cSut');
+  const ng=1/(sa/Se+sm/Sut),nge=sa>0?nGerber(sa,sm,Se,Sut):Infinity;
+  const smax=Math.sqrt((g('cBa')+g('cBm')+g('cXa')+g('cXm'))**2+3*(g('cTa')+g('cTm'))**2),ny=Sy/smax;
+  $('cSa').textContent=f2(sa,1);$('cSm').textContent=f2(sm,1);$('cNg').textContent=f2(ng);$('cNge').textContent=isFinite(nge)?f2(nge):'∞';$('cNy').textContent=f2(ny);
+  const v=$('cVerdict');const ok=ng>=1&&ny>=1;v.className='verdict '+(ok?'ok':'no');
+  v.textContent=ok?`Safe against yielding and infinite life by Goodman. The governing factor is ${f2(Math.min(ng,ny))}.`:(ny<1?'The part yields on the first cycle.':'Finite life by Goodman. Estimate N with the equivalent reversed stress.');
+}
+['cKb','cBa','cBm','cKx','cXa','cXm','cKt','cTa','cTm','cSe','cSy','cSut'].forEach(i=>$(i).addEventListener('input',drawComb));
+drawComb();
+
+/* ---------- Kf ---------- */
+function sqrtA(sutKsi,t){const s=sutKsi;return t?0.190-2.51e-3*s+1.35e-5*s*s-2.67e-8*s*s*s:0.246-3.08e-3*s+1.51e-5*s*s-2.67e-8*s*s*s;}
+function qOf(rmm,sutMPa,t){const a=sqrtA(sutMPa/6.89476,t);return 1/(1+a/Math.sqrt(rmm/25.4));}
+function drawKf(){
+  const Sut=num('kSut'),r=num('kR'),t=$('kLoad').value==='t',Kt=num('kKt');
+  $('kRO').textContent=r.toFixed(2)+' mm';
+  const q=qOf(r,Sut,t),Kf=1+q*(Kt-1);
+  $('kQ').textContent=q.toFixed(3);$('kKf').textContent=Kf.toFixed(3);
+  const W=620,H=280,l=50,rr=20,tp=16,b=44,X=v=>l+v/4*(W-l-rr),Y=v=>H-b-v*(H-tp-b);
+  let s='';
+  [0,.2,.4,.6,.8,1].forEach(v=>s+=`<line class="grid" x1="${l}" x2="${W-rr}" y1="${Y(v)}" y2="${Y(v)}"/><text class="lbl" x="${l-6}" y="${Y(v)+4}" text-anchor="end">${v.toFixed(1)}</text>`);
+  [0,1,2,3,4].forEach(v=>s+=`<text class="lbl" x="${X(v)}" y="${H-b+18}" text-anchor="middle">${v}</text>`);
+  s+=`<line class="ax" x1="${l}" x2="${l}" y1="${tp}" y2="${H-b}"/><line class="ax" x1="${l}" x2="${W-rr}" y1="${H-b}" y2="${H-b}"/>`;
+  s+=`<text class="lbl" x="${(l+W-rr)/2}" y="${H-8}" text-anchor="middle">notch radius r (mm)</text>`;
+  [414,690,1034,1380].forEach(S=>{let d='';for(let i=0;i<=80;i++){const x=0.05+3.95*i/80;d+=(i?'L':'M')+X(x).toFixed(1)+','+Y(qOf(x,S,t)).toFixed(1);}
+    s+=`<path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-rr-2}" y="${Y(qOf(4,S,t))-4}" text-anchor="end">${S} MPa</text>`;});
+  let d='';for(let i=0;i<=80;i++){const x=0.05+3.95*i/80;d+=(i?'L':'M')+X(x).toFixed(1)+','+Y(qOf(x,Sut,t)).toFixed(1);}
+  s+=`<path class="curve" d="${d}"/><circle class="pt" cx="${X(r)}" cy="${Y(q)}" r="7"/><text class="lbl-ink" x="${X(r)+10}" y="${Y(q)+18}">q = ${q.toFixed(2)}</text>`;
+  s+=`<text class="lbl" x="${l+6}" y="${tp+12}">q (${t?'torsion':'bending/axial'})</text>`;
+  $('kSvg').innerHTML=s;
+}
+['kSut','kR','kLoad','kKt'].forEach(i=>$(i).addEventListener('input',drawKf));
+drawKf();
+
+/* ---------- Examples ---------- */
+document.querySelectorAll('[data-ex]').forEach(ex=>{
+  const items=[...ex.querySelectorAll('ol li')];
+  ex.querySelector('[data-next]').addEventListener('click',()=>{const h=items.find(i=>i.hidden);if(h)h.hidden=false;});
+  ex.querySelector('[data-all]').addEventListener('click',()=>items.forEach(i=>i.hidden=false));
+  ex.querySelector('[data-reset]').addEventListener('click',()=>items.forEach(i=>i.hidden=true));
+});
+
+/* ---------- Quiz ---------- */
+const Q=[
+ ['A stress cycle has σmax = 120 MPa and σmin = −120 MPa. What kind of loading is it?',['Repeated','Fully reversed','Static','Fluctuating with tensile mean'],1,'σm = (120 − 120)/2 = 0, so the cycle is fully (completely) reversed with σa = 120 MPa.'],
+ ['Where does a fatigue crack usually initiate?',['At the neutral axis','At a stress concentration','At the center of the cross-section','Wherever the stress is compressive'],1,'Cracks start where the local stress is highest: notches, fillets, holes, and surface defects.'],
+ ['A fatigue crack propagates only under…',['Compressive stress','Tensile stress','Shear stress only','Any stress above Sy'],1,'Tension opens the crack. This is why a tensile midrange stress hurts and a compressive one helps.'],
+ ['Why is the stress in the R.R. Moore test completely reversed?',['The load alternates direction','The specimen rotates under a fixed bending moment, so each surface point moves between the tension and compression sides','The motor reverses every cycle','Transverse shear cancels the mean stress'],1,'The moment does not change. Rotation carries each point from the bottom (tension) to the top (compression) once per revolution.'],
+ ['A steel has Sut = 1600 MPa. What is the estimate of S′e?',['800 MPa','700 MPa','640 MPa','1600 MPa'],1,'For Sut > 1400 MPa (200 kpsi), S′e is capped at 700 MPa (100 kpsi).'],
+ ['A 32 mm round bar is NOT rotating but sees repeated bending. Which diameter goes into kb?',['32 mm','0.95 × 32 = 30.4 mm','de = 0.37 × 32 ≈ 11.8 mm','0.808 × 32 ≈ 25.9 mm'],2,'The equivalent diameter matches the volume stressed above 95% of the maximum to that of a rotating specimen: de = 0.37d, giving kb ≈ 0.95.'],
+ ['For a shaft with combined bending and torsion analyzed with von Mises stresses, kc should be…',['0.59','0.85','1','The product 0.59 × 0.85'],2,'Combined loading uses kc = 1, because the von Mises combination already accounts for the loading type.'],
+ ['Which criterion is the most conservative in the σa–σm diagram?',['Gerber','ASME-elliptic','Modified Goodman','Soderberg'],3,'Soderberg runs from Se to Sy, inside every other fatigue line.'],
+ ['Why can N = (σa/a)^(1/b) not be used directly when σm ≠ 0?',['The constants a and b depend on σm','The S-N line was built from fully reversed tests, so we must first convert to an equivalent fully reversed stress σrev','It only works in kpsi','Fluctuating stress always gives infinite life'],1,'Use σa/σrev + σm/Sut = 1 to get σrev, then N = (σrev/a)^(1/b).'],
+ ['Below 10³ cycles, Sf = aN^b is…',['Exact','Not valid; this is the low-cycle region','Equal to Se','Valid only for aluminum'],1,'The two-point line between A (10³) and B (10⁶) is valid only in that range.'],
+ ['A ductile steel part with a fillet sees fatigue loading. Do you apply a stress concentration factor?',['No, only brittle materials need it','Yes, use Kf = 1 + q(Kt − 1)','Yes, always use Kt directly','Only if σm > 0'],1,'In fatigue, notches matter for ductile and brittle materials. Notch sensitivity q reduces Kt to Kf.'],
+ ['If the notch sensitivity q = 0, then…',['Kf = Kt','Kf = 0','Kf = 1 (the notch has no effect on fatigue)','The part has infinite life'],2,'Kf = 1 + 0·(Kt − 1) = 1.']
+];
+let score=0,answered=0;
+function buildQuiz(){score=0;answered=0;$('qScore').textContent=`0 / ${Q.length}`;
+  $('quizBox').innerHTML=Q.map((q,i)=>`<div class="q" id="q${i}"><div class="eyebrow">Question ${i+1}</div><div class="prompt">${q[0]}</div><div class="opts">${q[1].map((o,j)=>`<button class="opt" data-q="${i}" data-o="${j}">${o}</button>`).join('')}</div><div class="fb" hidden></div></div>`).join('');
+  document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.q,j=+b.dataset.o,q=Q[i],box=$('q'+i);
+    box.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.o===q[2])x.classList.add('right');});
+    if(j!==q[2])b.classList.add('wrong');else score++;
+    answered++;const fb=box.querySelector('.fb');fb.hidden=false;
+    fb.innerHTML=`<b style="color:var(${j===q[2]?'--good':'--bad'})">${j===q[2]?'Correct.':'Not quite.'}</b> ${q[3]}`;
+    $('qScore').textContent=`${score} / ${Q.length}`+(answered===Q.length?' · done':'');
+  }));}
+$('qReset').addEventListener('click',buildQuiz);
+buildQuiz();
+</script>
+
+</body>
+</html>
